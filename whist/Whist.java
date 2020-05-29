@@ -7,9 +7,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Properties;
 
 public class Whist extends CardGame{
-	static final Random random = ThreadLocalRandom.current();
+	static Random random; 	// = ThreadLocalRandom.current();
 	final String trumpImage[] = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
 
 	public boolean rankGreater(Card card1, Card card2) {
@@ -20,13 +25,16 @@ public class Whist extends CardGame{
 		int x = random.nextInt(clazz.getEnumConstants().length);
 		return clazz.getEnumConstants()[x];
 	}
-	private final String version = "1.0";
-	public final int nbPlayers = 4;
-	public final int nbStartCards = 13;
-	public final int winningScore = 11;
-	private final int handWidth = 400;
-	private final int trickWidth = 40;
+	
+	private static String version; 	// = "1.0";
+	public static int nbPlayers; 	// = 4;
+	public static int nbStartCards; // = 13;
+	public static int winningScore; // = 11;
+	private static int handWidth;	// = 400;
+	private static int trickWidth;	// = 40;
+	
 	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
+	
 	private final Location[] handLocations = {
 		new Location(350, 625),
 		new Location(75, 350),
@@ -42,11 +50,11 @@ public class Whist extends CardGame{
 	private Actor[] scoreActors = {null, null, null, null };
 	private final Location trickLocation = new Location(350, 350);
 	private final Location textLocation = new Location(350, 450);
-	private final int thinkingTime = 2000;
+	private static int thinkingTime;	// = 2000;
 	private Hand[] hands;
 	private Location hideLocation = new Location(-500, - 500);
 	private Location trumpsActorLocation = new Location(50, 50);
-	private boolean enforceRules = false;
+	private static boolean enforceRules;	// = false;
 
 	public void setStatus(String string) { setStatusText(string); }
 	private int[] scores = new int[nbPlayers];
@@ -70,16 +78,30 @@ public class Whist extends CardGame{
 	private Card selected;
 
 	private void initRound() {
-		 hands = deck.dealingOut(nbPlayers, nbStartCards); // Last element of hands is leftover cards; these are ignored
-		 for (int i = 0; i < nbPlayers; i++) {
-			   hands[i].sort(Hand.SortType.SUITPRIORITY, true);
-		 }
+		// Create nbPlayer hand arrays
+		hands = deck.dealingOut(nbPlayers, 0); // Last element of hands is leftover cards; these are ignored
+		
+		// Own version of dealingOut
+		ArrayList<Integer> cards = new ArrayList<Integer>();
+		for (int i = 0; i < deck.getNumberOfCards(); i++) { cards.add(i); }
+		Collections.shuffle(cards, random); // Shuffle based on seed
+		// Deal cards to each player
+		for (int i = 0; i < nbPlayers; i++) {
+			for (int j = 0; j < nbStartCards; j++) {
+				int cardNumber = cards.remove(0);
+				hands[i].insert(cardNumber, false);
+			}
+		}
+		
+		for (int i = 0; i < nbPlayers; i++) {
+			hands[i].sort(Hand.SortType.SUITPRIORITY, true);
+		}
 		 // Set up human player for interaction
 		CardListener cardListener = new CardAdapter()  // Human Player plays card
 			    {
 			      public void leftDoubleClicked(Card card) { selected = card; hands[0].setTouchEnabled(false); }
 			    };
-		hands[0].addCardListener(cardListener);
+    	hands[0].addCardListener(cardListener);
 		 // graphics
 	    RowLayout[] layouts = new RowLayout[nbPlayers];
 	    for (int i = 0; i < nbPlayers; i++) {
@@ -185,12 +207,20 @@ public class Whist extends CardGame{
 		return Optional.empty();
 	}
 
-	public Whist(){
+	public Whist(HashMap<Boolean, Integer> seed){
 		super(700, 700, 30);
 		setTitle("Whist (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
 		setStatusText("Initializing...");
 		initScore();
 		Optional<Integer> winner;
+		
+		if(seed.containsKey(true)){
+        	Whist.random = new Random((long) seed.get(true));
+        }
+        else{
+        	Whist.random = new Random();	
+        }
+		
 		do {
 		  initRound();
 		  winner = playRound();
@@ -200,8 +230,43 @@ public class Whist extends CardGame{
 		refresh();
 	}
 
-	public static void main(String[] args) {
-	// System.out.println("Working Directory = " + System.getProperty("user.dir"));
-		new Whist();
+	public static void main(String[] args) throws IOException {
+//		System.out.println("Working Directory = " + System.getProperty("user.dir"));
+		
+		Properties whistProperties = new Properties();
+		// Read properties
+		FileReader inStream = null;
+		try {
+			inStream = new FileReader("original.properties"); // TODO: How to decide which file to read?
+			whistProperties.load(inStream);
+		} finally {
+			if (inStream != null) {
+				inStream.close();
+			}
+		}
+		
+		String seedProp = whistProperties.getProperty("Seed");
+		nbPlayers = Integer.parseInt(whistProperties.getProperty("nbPlayers"));
+		nbStartCards = Integer.parseInt(whistProperties.getProperty("nbStartCards"));
+		winningScore = Integer.parseInt(whistProperties.getProperty("winningScore"));
+		enforceRules = Boolean.parseBoolean(whistProperties.getProperty("enforceRules"));
+		// Depend on which property files
+		// TODO: How to interpret interactivePlayer?
+		// TODO: How to interpret smartPlayer?
+		version = whistProperties.getProperty("version");
+		handWidth = Integer.parseInt(whistProperties.getProperty("handWidth"));
+		trickWidth = Integer.parseInt(whistProperties.getProperty("trickWidth"));
+		thinkingTime = Integer.parseInt(whistProperties.getProperty("thinkingTime"));
+		// Seed options
+		HashMap<Boolean, Integer> seedMap = new HashMap<>();
+		if (seedProp == null) {
+			seedMap.put(false, 0);
+		}
+		else {
+			seedMap.put(true, Integer.parseInt(seedProp));
+		}
+//		Integer seed = seedMap.get(true);
+//      System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
+		new Whist(seedMap);
 	}
 }
