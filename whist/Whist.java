@@ -8,47 +8,18 @@ import java.awt.Font;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-@SuppressWarnings("serial")
-public class Whist extends CardGame {
-	
-	public enum Suit
-	{
-	SPADES, HEARTS, DIAMONDS, CLUBS
-	}
-
-	public enum Rank
-	{
-	// Reverse order of rank importance (see rankGreater() below)
-	// Order of cards is tied to card images
-	ACE, KING, QUEEN, JACK, TEN, NINE, EIGHT, SEVEN, SIX, FIVE, FOUR, THREE, TWO
-	}
-  
-	final String trumpImage[] = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
-
+public class Whist extends CardGame{
 	static final Random random = ThreadLocalRandom.current();
-
-	// return random Enum value
-	public static <T extends Enum<?>> T randomEnum(Class<T> clazz){
-	  int x = random.nextInt(clazz.getEnumConstants().length);
-	  return clazz.getEnumConstants()[x];
-	}
-
-	// return random Card from Hand
-	public static Card randomCard(Hand hand){
-	  int x = random.nextInt(hand.getNumberOfCards());
-	  return hand.get(x);
-	}
-
-	// return random Card from ArrayList
-	public static Card randomCard(ArrayList<Card> list){
-	  int x = random.nextInt(list.size());
-	  return list.get(x);
-	}
+	final String trumpImage[] = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
 
 	public boolean rankGreater(Card card1, Card card2) {
 	  return card1.getRankId() < card2.getRankId(); // Warning: Reverse rank order of cards (see comment on enum)
 	}
-
+	// return random Enum value
+	public static <T extends Enum<?>> T randomEnum(Class<T> clazz){
+		int x = random.nextInt(clazz.getEnumConstants().length);
+		return clazz.getEnumConstants()[x];
+	}
 	private final String version = "1.0";
 	public final int nbPlayers = 4;
 	public final int nbStartCards = 13;
@@ -122,7 +93,7 @@ public class Whist extends CardGame {
 //	    for (int i = 1; i < nbPlayers; i++)  // This code can be used to visually hide the cards in a hand (make them face down)
 //	      	hands[i].setVerso(true);
 	    // End graphics
- }
+ 	}
 
 	private Optional<Integer> playRound() {  // Returns winner, if any
 		// Select and display trump suit
@@ -145,7 +116,7 @@ public class Whist extends CardGame {
 			} else {
 				setStatusText("Player " + nextPlayer + " thinking...");
 				delay(thinkingTime);
-				selected = randomCard(hands[nextPlayer]); // Random NPC
+				//selected = randomCard(hands[nextPlayer]); // Random NPC random player-> RandomStrategy.java
 			}
 			// Lead with selected card
 			trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
@@ -167,7 +138,7 @@ public class Whist extends CardGame {
 				} else {
 					setStatusText("Player " + nextPlayer + " thinking...");
 					delay(thinkingTime);
-					selected = randomCard(hands[nextPlayer]);
+					//selected = randomCard(hands[nextPlayer]); random player-> RandomStrategy.java
 				}
 				// Follow with selected card
 				trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
@@ -214,8 +185,7 @@ public class Whist extends CardGame {
 		return Optional.empty();
 	}
 
-	public Whist()
-	{
+	public Whist(){
 		super(700, 700, 30);
 		setTitle("Whist (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
 		setStatusText("Initializing...");
@@ -230,9 +200,8 @@ public class Whist extends CardGame {
 		refresh();
 	}
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 	// System.out.println("Working Directory = " + System.getProperty("user.dir"));
-	new Whist();
+		new Whist();
 	}
 }
