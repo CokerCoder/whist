@@ -1,17 +1,15 @@
 import ch.aplu.jcardgame.Card;
 import ch.aplu.jcardgame.CardAdapter;
 import ch.aplu.jcardgame.CardListener;
-import ch.aplu.jcardgame.Hand;
-import ch.aplu.jcardgame.*;
-import ch.aplu.jgamegrid.*;
 
-import java.util.ArrayList;
 
 public class HumanStrategy implements IPlayingStrategy{
 
-    volatile Card selected;
+    private volatile Card selected;
     @Override
     public Card play(Player player){
+
+        selected = null;
 
         // Set up human player for interaction
         CardListener cardListener = new CardAdapter()  // Human Player plays card
@@ -20,7 +18,6 @@ public class HumanStrategy implements IPlayingStrategy{
                 player.getHand().setTouchEnabled(false); }
         };
         player.getHand().addCardListener(cardListener);
-
         player.getHand().setTouchEnabled(true);
 
         while (selected == null) {
