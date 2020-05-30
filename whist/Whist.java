@@ -32,7 +32,9 @@ public class Whist extends CardGame{
 	public static int winningScore; // = 11;
 	private static int handWidth;	// = 400;
 	private static int trickWidth;	// = 40;
-	
+
+	private static List<String> playerType;
+
 	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
 	
 	private final Location[] handLocations = {
@@ -61,6 +63,8 @@ public class Whist extends CardGame{
 
 	Font bigFont = new Font("Serif", Font.BOLD, 36);
 
+	private List<Player> players;
+
 	private void initScore() {
 		 for (int i = 0; i < nbPlayers; i++) {
 			 scores[i] = 0;
@@ -77,10 +81,14 @@ public class Whist extends CardGame{
 
 	private Card selected;
 
-	private void initRound() {
+	private void initRound() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+		// Create players
+		for (String type : playerType) {
+			players.add(new Player(type));
+		}
+
 		// Create nbPlayer hand arrays
-		hands = deck.dealingOut(nbPlayers, 0); // Last element of hands is leftover cards; these are ignored
-		
+		hands = deck.dealingOut(nbPlayers, 0); // Last element of hands is leftover cards; these are ignore
 		// Own version of dealingOut
 		ArrayList<Integer> cards = new ArrayList<Integer>();
 		for (int i = 0; i < deck.getNumberOfCards(); i++) { cards.add(i); }
@@ -95,7 +103,13 @@ public class Whist extends CardGame{
 		
 		for (int i = 0; i < nbPlayers; i++) {
 			hands[i].sort(Hand.SortType.SUITPRIORITY, true);
+			players.get(i).setHand(hands[i]);
 		}
+
+		for (int i = 0; i < nbPlayers; i++) {
+			System.out.println(players.get(i).getHand().toString());
+		}
+
 		 // Set up human player for interaction
 		CardListener cardListener = new CardAdapter()  // Human Player plays card
 			    {
@@ -207,7 +221,7 @@ public class Whist extends CardGame{
 		return Optional.empty();
 	}
 
-	public Whist(HashMap<Boolean, Integer> seed){
+	public Whist(HashMap<Boolean, Integer> seed) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
 		super(700, 700, 30);
 		setTitle("Whist (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
 		setStatusText("Initializing...");
@@ -230,19 +244,14 @@ public class Whist extends CardGame{
 		refresh();
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
 //		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 		
 		Properties whistProperties = new Properties();
 		// Read properties
-		FileReader inStream = null;
-		try {
-			inStream = new FileReader("original.properties"); // TODO: How to decide which file to read?
+		try (FileReader inStream = new FileReader("original.properties")) {
+			// TODO: How to decide which file to read?
 			whistProperties.load(inStream);
-		} finally {
-			if (inStream != null) {
-				inStream.close();
-			}
 		}
 		
 		String seedProp = whistProperties.getProperty("Seed");
@@ -250,9 +259,12 @@ public class Whist extends CardGame{
 		nbStartCards = Integer.parseInt(whistProperties.getProperty("nbStartCards"));
 		winningScore = Integer.parseInt(whistProperties.getProperty("winningScore"));
 		enforceRules = Boolean.parseBoolean(whistProperties.getProperty("enforceRules"));
-		// Depend on which property files
-		// TODO: How to interpret interactivePlayer?
-		// TODO: How to interpret smartPlayer?
+
+		// Read player types from property file
+		String str = whistProperties.getProperty("playerType");
+		playerType = Arrays.asList(str.split(","));
+//		System.out.println(playerType.size());
+
 		version = whistProperties.getProperty("version");
 		handWidth = Integer.parseInt(whistProperties.getProperty("handWidth"));
 		trickWidth = Integer.parseInt(whistProperties.getProperty("trickWidth"));
@@ -266,7 +278,7 @@ public class Whist extends CardGame{
 			seedMap.put(true, Integer.parseInt(seedProp));
 		}
 //		Integer seed = seedMap.get(true);
-//      System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
+//        System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
 		new Whist(seedMap);
 	}
 }
