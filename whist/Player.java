@@ -26,6 +26,9 @@ public class Player implements Observer {
             case "random":
                 playingStrategy = factory.getRandomStrategy();
                 break;
+            case "human":
+                playingStrategy = factory.getHumanStrategy();
+                break;
         }
     }
 

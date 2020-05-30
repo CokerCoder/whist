@@ -12,11 +12,15 @@ public class StrategyFactory {
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
     public IPlayingStrategy getRandomStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        String className = System.getProperty("RandomStrategy.class.name");
+        String className = RandomStrategy.class.getName();
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
     public IPlayingStrategy getLegalStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         String className = System.getProperty("LegalStrategy.class.name");
+        return (IPlayingStrategy)Class.forName(className).newInstance();
+    }
+    public IPlayingStrategy getHumanStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        String className = HumanStrategy.class.getName();
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
 }

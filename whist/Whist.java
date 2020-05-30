@@ -63,7 +63,7 @@ public class Whist extends CardGame{
 
 	Font bigFont = new Font("Serif", Font.BOLD, 36);
 
-	private List<Player> players;
+	private List<Player> players = new ArrayList<>();
 
 	private void initScore() {
 		 for (int i = 0; i < nbPlayers; i++) {
@@ -84,7 +84,8 @@ public class Whist extends CardGame{
 	private void initRound() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
 		// Create players
 		for (String type : playerType) {
-			players.add(new Player(type));
+			Player newPlayer = new Player(type);
+			players.add(newPlayer);
 		}
 
 		// Create nbPlayer hand arrays
@@ -106,16 +107,7 @@ public class Whist extends CardGame{
 			players.get(i).setHand(hands[i]);
 		}
 
-		for (int i = 0; i < nbPlayers; i++) {
-			System.out.println(players.get(i).getHand().toString());
-		}
-
-		 // Set up human player for interaction
-		CardListener cardListener = new CardAdapter()  // Human Player plays card
-			    {
-			      public void leftDoubleClicked(Card card) { selected = card; hands[0].setTouchEnabled(false); }
-			    };
-    	hands[0].addCardListener(cardListener);
+		// TODO: should graphics be separated from Whist class
 		 // graphics
 	    RowLayout[] layouts = new RowLayout[nbPlayers];
 	    for (int i = 0; i < nbPlayers; i++) {
@@ -146,14 +138,15 @@ public class Whist extends CardGame{
 			trick = new Hand(deck);
 			selected = null;
 			if (0 == nextPlayer) {  // Select lead depending on player type
-				hands[0].setTouchEnabled(true);
+//				hands[0].setTouchEnabled(true);
 				setStatus("Player 0 double-click on card to lead.");
-				while (null == selected) delay(100);
+//				while (null == selected) delay(100);
 			} else {
 				setStatusText("Player " + nextPlayer + " thinking...");
-				delay(thinkingTime);
-				//selected = randomCard(hands[nextPlayer]); // Random NPC random player-> RandomStrategy.java
+//				delay(thinkingTime);
+//				//selected = randomCard(hands[nextPlayer]); // Random NPC random player-> RandomStrategy.java
 			}
+			selected = players.get(nextPlayer).play();
 			// Lead with selected card
 			trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
 			trick.draw();
@@ -168,14 +161,15 @@ public class Whist extends CardGame{
 				if (++nextPlayer >= nbPlayers) nextPlayer = 0;  // From last back to first
 				selected = null;
 				if (0 == nextPlayer) {
-					hands[0].setTouchEnabled(true);
+//					hands[0].setTouchEnabled(true);
 					setStatus("Player 0 double-click on card to follow.");
-					while (null == selected) delay(100);
+//					while (null == selected) delay(100);
 				} else {
 					setStatusText("Player " + nextPlayer + " thinking...");
-					delay(thinkingTime);
+//					delay(thinkingTime);
 					//selected = randomCard(hands[nextPlayer]); random player-> RandomStrategy.java
 				}
+				selected = players.get(nextPlayer).play();
 				// Follow with selected card
 				trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
 				trick.draw();
