@@ -32,7 +32,7 @@ public class Player implements Observer {
         }
     }
 
-    public Card play(){
+    public Card play() throws InterruptedException {
         return this.playingStrategy.play(this);
     }
     public Hand getHand(){

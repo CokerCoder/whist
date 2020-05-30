@@ -5,9 +5,9 @@ import ch.aplu.jcardgame.CardListener;
 
 public class HumanStrategy implements IPlayingStrategy{
 
-    private volatile Card selected;
+    private Card selected;
     @Override
-    public Card play(Player player){
+    public Card play(Player player) throws InterruptedException {
 
         selected = null;
 
@@ -21,7 +21,7 @@ public class HumanStrategy implements IPlayingStrategy{
         player.getHand().setTouchEnabled(true);
 
         while (selected == null) {
-            Thread.onSpinWait();
+            Thread.sleep(100);
         }
 
         return selected;

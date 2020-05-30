@@ -123,7 +123,7 @@ public class Whist extends CardGame{
 	    // End graphics
  	}
 
-	private Optional<Integer> playRound() {  // Returns winner, if any
+	private Optional<Integer> playRound() throws InterruptedException {  // Returns winner, if any
 		// Select and display trump suit
 		final Suit trumps = randomEnum(Suit.class);
 		final Actor trumpsActor = new Actor("sprites/"+trumpImage[trumps.ordinal()]);
@@ -215,7 +215,7 @@ public class Whist extends CardGame{
 		return Optional.empty();
 	}
 
-	public Whist(HashMap<Boolean, Integer> seed) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+	public Whist(HashMap<Boolean, Integer> seed) throws IllegalAccessException, InstantiationException, ClassNotFoundException, InterruptedException {
 		super(700, 700, 30);
 		setTitle("Whist (V" + version + ") Constructed for UofM SWEN30006 with JGameGrid (www.aplu.ch)");
 		setStatusText("Initializing...");
@@ -238,7 +238,7 @@ public class Whist extends CardGame{
 		refresh();
 	}
 
-	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException, InterruptedException {
 //		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 		
 		Properties whistProperties = new Properties();
