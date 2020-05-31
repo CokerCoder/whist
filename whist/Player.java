@@ -4,6 +4,9 @@ public class Player implements IObserver{
     private IPlayingStrategy playingStrategy;
     private Hand hand;
     private Hand trick;
+
+
+
     private Suit lead;
     private Suit trumps;
     private Card winningCard;
@@ -36,7 +39,10 @@ public class Player implements IObserver{
         return hand;
     }
     public void setHand(Hand hand) { this.hand = hand; }
-
+    public Suit getTrumps(){return trumps;}
+    public Suit getLead() {
+        return lead;
+    }
     @Override
     public void update(Hand trick, Suit lead, Suit trumps, Card winningCard) {
         this.trick = trick;

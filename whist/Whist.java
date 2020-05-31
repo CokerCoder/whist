@@ -223,7 +223,7 @@ public class Whist extends CardGame implements ISubject{
 
 		// Read properties
 		Properties whistProperties = new Properties();
-		try (FileReader inStream = new FileReader("original.properties")) {
+		try (FileReader inStream = new FileReader("legal.properties")) {
 			whistProperties.load(inStream);
 		}
 		String seedProp = whistProperties.getProperty("Seed");
