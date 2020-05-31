@@ -1,69 +1,62 @@
 // Whist.java
-
 import ch.aplu.jcardgame.*;
 import ch.aplu.jgamegrid.*;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
 public class Whist extends CardGame{
-	static Random random; 	// = ThreadLocalRandom.current();
-	final String trumpImage[] = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
+	static Random random;
+
+	// Display attributes
+	final String[] trumpImage = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
+	private static int handWidth = 400;
+	private static int trickWidth = 40;
+	private Actor[] scoreActors = {null, null, null, null };
+	private final Location trickLocation = new Location(350, 350);
+	private final Location textLocation = new Location(350, 450);
+	private Location hideLocation = new Location(-500, - 500);
+	private Location trumpsActorLocation = new Location(50, 50);
+	Font bigFont = new Font("Serif", Font.BOLD, 36);
+	private final Location[] handLocations = {
+			new Location(350, 625),
+			new Location(75, 350),
+			new Location(350, 75),
+			new Location(625, 350)
+	};
+	private final Location[] scoreLocations = {
+			new Location(575, 675),
+			new Location(25, 575),
+			new Location(575, 25),
+			new Location(650, 575)
+	};
+
+
+	private static String version; 	// = "1.0";
+	public static int nbPlayers; 	// = 4;
+	public static int nbStartCards; // = 13;
+	public static int winningScore; // = 11;
+	public static int thinkingTime;	// = 2000;
+	private static boolean enforceRules;	// = false;
+	private static String[] playerType;
+	private List<Player> players = new ArrayList<>();
+	private int[] scores = new int[nbPlayers];
+	private Hand[] hands;
+	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
+
 
 	public boolean rankGreater(Card card1, Card card2) {
-	  return card1.getRankId() < card2.getRankId(); // Warning: Reverse rank order of cards (see comment on enum)
+		return card1.getRankId() < card2.getRankId(); // Warning: Reverse rank order of cards (see comment on enum)
 	}
 	// return random Enum value
 	public static <T extends Enum<?>> T randomEnum(Class<T> clazz){
 		int x = random.nextInt(clazz.getEnumConstants().length);
 		return clazz.getEnumConstants()[x];
 	}
-	
-	private static String version; 	// = "1.0";
-	public static int nbPlayers; 	// = 4;
-	public static int nbStartCards; // = 13;
-	public static int winningScore; // = 11;
-	private static int handWidth;	// = 400;
-	private static int trickWidth;	// = 40;
-
-	private static List<String> playerType;
-
-	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
-	
-	private final Location[] handLocations = {
-		new Location(350, 625),
-		new Location(75, 350),
-		new Location(350, 75),
-		new Location(625, 350)
-	};
-  	private final Location[] scoreLocations = {
-		new Location(575, 675),
-		new Location(25, 575),
-		new Location(575, 25),
-		new Location(650, 575)
-	};
-	private Actor[] scoreActors = {null, null, null, null };
-	private final Location trickLocation = new Location(350, 350);
-	private final Location textLocation = new Location(350, 450);
-	private static int thinkingTime;	// = 2000;
-	private Hand[] hands;
-	private Location hideLocation = new Location(-500, - 500);
-	private Location trumpsActorLocation = new Location(50, 50);
-	private static boolean enforceRules;	// = false;
-
-	public void setStatus(String string) { setStatusText(string); }
-	private int[] scores = new int[nbPlayers];
-
-	Font bigFont = new Font("Serif", Font.BOLD, 36);
-
-	private List<Player> players = new ArrayList<>();
 
 	private void initScore() {
 		 for (int i = 0; i < nbPlayers; i++) {
@@ -79,13 +72,11 @@ public class Whist extends CardGame{
 		addActor(scoreActors[player], scoreLocations[player]);
 	}
 
-	private Card selected;
 
-	private void initRound() throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+	private void initRound() throws ClassNotFoundException, InstantiationException, InterruptedException, IllegalAccessException {
 		// Create players
-		for (String type : playerType) {
-			Player newPlayer = new Player(type);
-			players.add(newPlayer);
+		for (int i=0;i<nbPlayers;i++) {
+			players.add(new Player(playerType[i], i));
 		}
 
 		// Create nbPlayer hand arrays
@@ -130,46 +121,31 @@ public class Whist extends CardGame{
 		addActor(trumpsActor, trumpsActorLocation);
 		// End trump suit
 		Hand trick;
-		int winner;
-		Card winningCard;
-		Suit lead;
+		int winner =0;
+		Card winningCard = null;
+
 		int nextPlayer = random.nextInt(nbPlayers); // randomly select player to lead for this round
 		for (int i = 0; i < nbStartCards; i++) {
 			trick = new Hand(deck);
-			selected = null;
-			if (0 == nextPlayer) {  // Select lead depending on player type
-//				hands[0].setTouchEnabled(true);
-				setStatus("Player 0 double-click on card to lead.");
-//				while (null == selected) delay(100);
-			} else {
-				setStatusText("Player " + nextPlayer + " thinking...");
-//				delay(thinkingTime);
-//				//selected = randomCard(hands[nextPlayer]); // Random NPC random player-> RandomStrategy.java
-			}
-			selected = players.get(nextPlayer).play();
-			// Lead with selected card
-			trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
-			trick.draw();
-			selected.setVerso(false);
-			// No restrictions on the card being lead
-			lead = (Suit) selected.getSuit();
-			selected.transfer(trick, true); // transfer to trick (includes graphic effect)
-			winner = nextPlayer;
-			winningCard = selected;
-			// End Lead
-			for (int j = 1; j < nbPlayers; j++) {
-				if (++nextPlayer >= nbPlayers) nextPlayer = 0;  // From last back to first
-				selected = null;
-				if (0 == nextPlayer) {
-//					hands[0].setTouchEnabled(true);
-					setStatus("Player 0 double-click on card to follow.");
-//					while (null == selected) delay(100);
+			Card selected;
+			Suit lead = null;
+
+			for (int j = 0; j < nbPlayers; j++) {
+				if (nextPlayer+1 > nbPlayers) nextPlayer = 0;  // From last back to first
+				if (playerType[nextPlayer].equals("human")) {
+					setStatusText("Player " + nextPlayer + " double-click on card to follow.");
 				} else {
 					setStatusText("Player " + nextPlayer + " thinking...");
-//					delay(thinkingTime);
-					//selected = randomCard(hands[nextPlayer]); random player-> RandomStrategy.java
 				}
 				selected = players.get(nextPlayer).play();
+
+				// Set lead
+				if (lead==null) {
+					lead = (Suit) selected.getSuit();
+					winner = nextPlayer;
+					winningCard = selected;
+				}
+
 				// Follow with selected card
 				trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
 				trick.draw();
@@ -200,6 +176,7 @@ public class Whist extends CardGame{
 						winner = nextPlayer;
 						winningCard = selected;
 				}
+				nextPlayer++;
 				// End Follow
 			}
 			delay(600);
@@ -232,7 +209,7 @@ public class Whist extends CardGame{
 		do {
 		  initRound();
 		  winner = playRound();
-		} while (!winner.isPresent());
+		} while (winner.isEmpty());
 		addActor(new Actor("sprites/gameover.gif"), textLocation);
 		setStatusText("Game over. Winner is player: " + winner.get());
 		refresh();
@@ -240,29 +217,23 @@ public class Whist extends CardGame{
 
 	public static void main(String[] args) throws IOException, IllegalAccessException, ClassNotFoundException, InstantiationException, InterruptedException {
 //		System.out.println("Working Directory = " + System.getProperty("user.dir"));
-		
-		Properties whistProperties = new Properties();
+
 		// Read properties
+		Properties whistProperties = new Properties();
 		try (FileReader inStream = new FileReader("original.properties")) {
-			// TODO: How to decide which file to read?
 			whistProperties.load(inStream);
 		}
-		
 		String seedProp = whistProperties.getProperty("Seed");
 		nbPlayers = Integer.parseInt(whistProperties.getProperty("nbPlayers"));
 		nbStartCards = Integer.parseInt(whistProperties.getProperty("nbStartCards"));
 		winningScore = Integer.parseInt(whistProperties.getProperty("winningScore"));
 		enforceRules = Boolean.parseBoolean(whistProperties.getProperty("enforceRules"));
+		version = whistProperties.getProperty("version");
+		thinkingTime = Integer.parseInt(whistProperties.getProperty("thinkingTime"));
 
 		// Read player types from property file
-		String str = whistProperties.getProperty("playerType");
-		playerType = Arrays.asList(str.split(","));
-//		System.out.println(playerType.size());
+		playerType = whistProperties.getProperty("playerType").split(",");
 
-		version = whistProperties.getProperty("version");
-		handWidth = Integer.parseInt(whistProperties.getProperty("handWidth"));
-		trickWidth = Integer.parseInt(whistProperties.getProperty("trickWidth"));
-		thinkingTime = Integer.parseInt(whistProperties.getProperty("thinkingTime"));
 		// Seed options
 		HashMap<Boolean, Integer> seedMap = new HashMap<>();
 		if (seedProp == null) {

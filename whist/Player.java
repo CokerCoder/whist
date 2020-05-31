@@ -5,16 +5,20 @@ import java.util.Observer;
 
 public class Player implements Observer {
     private IPlayingStrategy playingStrategy;
+    private int playerNo;
     private Hand hand;
     private Hand trick;
     private Suit lead;
     private Suit trump;
     private Card winningCard;
+
+
     @Override
     public void update(Observable o, Object arg) {
 
     }
-    public Player(String type) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+    public Player(String type, int playerNo) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+        this.playerNo = playerNo;
         StrategyFactory factory = StrategyFactory.getInstance();
         switch (type) {
             case "legal":
@@ -33,8 +37,11 @@ public class Player implements Observer {
     }
 
     public Card play() throws InterruptedException {
+        // Only delay when it's not a human turn
+        if (!playingStrategy.toString().substring(0,5).equals("Human")) { Thread.sleep(Whist.thinkingTime); }
         return this.playingStrategy.play(this);
     }
+
     public Hand getHand(){
         return hand;
     }
