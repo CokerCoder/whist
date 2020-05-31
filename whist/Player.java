@@ -50,4 +50,12 @@ public class Player implements IObserver{
         this.trumps = trumps;
         this.winningCard = winningCard;
     }
+
+    public Hand getTrick() {
+        return trick;
+    }
+
+    public Card getWinningCard() {
+        return winningCard;
+    }
 }
