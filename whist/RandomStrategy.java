@@ -1,5 +1,4 @@
-import ch.aplu.jcardgame.Card;
-import ch.aplu.jcardgame.Hand;
+import ch.aplu.jcardgame.*;
 
 import java.util.ArrayList;
 

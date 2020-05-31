@@ -8,7 +8,7 @@ public class StrategyFactory {
 
     }
     public IPlayingStrategy getSmartStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        String className = System.getProperty("SmartStrategy.class.name");
+        String className = SmartStrategy.class.getName();
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
     public IPlayingStrategy getRandomStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -16,7 +16,7 @@ public class StrategyFactory {
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
     public IPlayingStrategy getLegalStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        String className = System.getProperty("LegalStrategy.class.name");
+        String className = LegalStrategy.class.getName();
         return (IPlayingStrategy)Class.forName(className).newInstance();
     }
     public IPlayingStrategy getHumanStrategy() throws ClassNotFoundException, IllegalAccessException, InstantiationException {

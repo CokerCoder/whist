@@ -1,24 +1,14 @@
 import ch.aplu.jcardgame.*;
 
-import java.util.Observable;
-import java.util.Observer;
-
-public class Player implements Observer {
+public class Player implements IObserver{
     private IPlayingStrategy playingStrategy;
-    private int playerNo;
     private Hand hand;
     private Hand trick;
     private Suit lead;
-    private Suit trump;
+    private Suit trumps;
     private Card winningCard;
 
-
-    @Override
-    public void update(Observable o, Object arg) {
-
-    }
-    public Player(String type, int playerNo) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
-        this.playerNo = playerNo;
+    public Player(String type) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         StrategyFactory factory = StrategyFactory.getInstance();
         switch (type) {
             case "legal":
@@ -38,7 +28,7 @@ public class Player implements Observer {
 
     public Card play() throws InterruptedException {
         // Only delay when it's not a human turn
-        if (!playingStrategy.toString().substring(0,5).equals("Human")) { Thread.sleep(Whist.thinkingTime); }
+        if (!playingStrategy.toString().startsWith("Human")) { Thread.sleep(Whist.thinkingTime); }
         return this.playingStrategy.play(this);
     }
 
@@ -47,4 +37,11 @@ public class Player implements Observer {
     }
     public void setHand(Hand hand) { this.hand = hand; }
 
+    @Override
+    public void update(Hand trick, Suit lead, Suit trumps, Card winningCard) {
+        this.trick = trick;
+        this.lead = lead;
+        this.trumps = trumps;
+        this.winningCard = winningCard;
+    }
 }

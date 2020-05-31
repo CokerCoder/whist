@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class Whist extends CardGame{
+public class Whist extends CardGame implements ISubject{
 	static Random random;
 
 	// Display attributes
@@ -76,7 +76,8 @@ public class Whist extends CardGame{
 	private void initRound() throws ClassNotFoundException, InstantiationException, InterruptedException, IllegalAccessException {
 		// Create players
 		for (int i=0;i<nbPlayers;i++) {
-			players.add(new Player(playerType[i], i));
+			addObserver(new Player(playerType[i]));
+
 		}
 
 		// Create nbPlayer hand arrays
@@ -106,6 +107,7 @@ public class Whist extends CardGame{
 			layouts[i].setRotationAngle(90 * i);
 //			layouts[i].setStepDelay(10);
 			hands[i].setView(this, layouts[i]);
+			hands[i].setView(this, layouts[i]);
 			hands[i].setTargetArea(new TargetArea(trickLocation));
 			hands[i].draw();
 	    }
@@ -114,22 +116,24 @@ public class Whist extends CardGame{
 	    // End graphics
  	}
 
+	private Suit trumps;
+	private Card winningCard;
+	private Hand trick;
+	private Suit lead;
+
 	private Optional<Integer> playRound() throws InterruptedException {  // Returns winner, if any
 		// Select and display trump suit
-		final Suit trumps = randomEnum(Suit.class);
+		trumps = randomEnum(Suit.class);
 		final Actor trumpsActor = new Actor("sprites/"+trumpImage[trumps.ordinal()]);
 		addActor(trumpsActor, trumpsActorLocation);
 		// End trump suit
-		Hand trick;
+		winningCard = null;
 		int winner =0;
-		Card winningCard = null;
-
 		int nextPlayer = random.nextInt(nbPlayers); // randomly select player to lead for this round
 		for (int i = 0; i < nbStartCards; i++) {
 			trick = new Hand(deck);
 			Card selected;
-			Suit lead = null;
-
+			lead = null;
 			for (int j = 0; j < nbPlayers; j++) {
 				if (nextPlayer+1 > nbPlayers) nextPlayer = 0;  // From last back to first
 				if (playerType[nextPlayer].equals("human")) {
@@ -137,15 +141,14 @@ public class Whist extends CardGame{
 				} else {
 					setStatusText("Player " + nextPlayer + " thinking...");
 				}
+				notifyObservers();
 				selected = players.get(nextPlayer).play();
-
 				// Set lead
 				if (lead==null) {
 					lead = (Suit) selected.getSuit();
 					winner = nextPlayer;
 					winningCard = selected;
 				}
-
 				// Follow with selected card
 				trick.setView(this, new RowLayout(trickLocation, (trick.getNumberOfCards()+2)*trickWidth));
 				trick.draw();
@@ -153,8 +156,8 @@ public class Whist extends CardGame{
 				// Check: Following card must follow suit if possible
 				if (selected.getSuit() != lead && hands[nextPlayer].getNumberOfCardsWithSuit(lead) > 0) {
 					 // Rule violation
-					 String violation = "Follow rule broken by player " + nextPlayer + " attempting to play " + selected;
-					 System.out.println(violation);
+					String violation = "Follow rule broken by player " + nextPlayer + " attempting to play " + selected;
+					System.out.println(violation);
 					if (enforceRules)
 						try {
 							throw(new BrokeRuleException(violation));
@@ -209,7 +212,7 @@ public class Whist extends CardGame{
 		do {
 		  initRound();
 		  winner = playRound();
-		} while (winner.isEmpty());
+		} while (!winner.isPresent());
 		addActor(new Actor("sprites/gameover.gif"), textLocation);
 		setStatusText("Game over. Winner is player: " + winner.get());
 		refresh();
@@ -232,7 +235,7 @@ public class Whist extends CardGame{
 		thinkingTime = Integer.parseInt(whistProperties.getProperty("thinkingTime"));
 
 		// Read player types from property file
-		playerType = whistProperties.getProperty("playerType").split(",");
+		playerType = whistProperties.getProperty("playerType").replaceAll(" +","").split(",");
 
 		// Seed options
 		HashMap<Boolean, Integer> seedMap = new HashMap<>();
@@ -245,5 +248,23 @@ public class Whist extends CardGame{
 //		Integer seed = seedMap.get(true);
 //        System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
 		new Whist(seedMap);
+	}
+
+	@Override
+	public void addObserver(IObserver o) {
+		players.add((Player) o);
+	}
+
+	@Override
+	public void removeObserver(IObserver o) {
+		players.remove((Player) o);
+	}
+
+	@Override
+	public void notifyObservers() {
+		for (Iterator<Player> it = players.iterator(); it.hasNext();) {
+			IObserver o = it.next();
+			o.update(trick,lead, trumps, winningCard);
+		}
 	}
 }
