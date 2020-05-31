@@ -40,22 +40,15 @@ public class Player implements IObserver{
     }
     public void setHand(Hand hand) { this.hand = hand; }
     public Suit getTrumps(){return trumps;}
-    public Suit getLead() {
-        return lead;
-    }
+    public Suit getLead() { return lead; }
+    public Hand getTrick() { return trick; }
+    public Card getWinningCard() { return winningCard; }
+    
     @Override
     public void update(Hand trick, Suit lead, Suit trumps, Card winningCard) {
         this.trick = trick;
         this.lead = lead;
         this.trumps = trumps;
         this.winningCard = winningCard;
-    }
-
-    public Hand getTrick() {
-        return trick;
-    }
-
-    public Card getWinningCard() {
-        return winningCard;
     }
 }

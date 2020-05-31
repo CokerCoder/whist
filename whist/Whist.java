@@ -36,12 +36,12 @@ public class Whist extends CardGame implements ISubject{
 	};
 
 
-	private static String version; 	// = "1.0";
-	public static int nbPlayers; 	// = 4;
-	public static int nbStartCards; // = 13;
-	public static int winningScore; // = 11;
-	public static int thinkingTime;	// = 2000;
-	private static boolean enforceRules;	// = false;
+	private static String version;
+	public static int nbPlayers; 
+	public static int nbStartCards; 
+	public static int winningScore;
+	public static int thinkingTime;
+	private static boolean enforceRules;
 	private static String[] playerType;
 	private List<Player> players = new ArrayList<>();
 	private int[] scores = new int[nbPlayers];
@@ -49,7 +49,7 @@ public class Whist extends CardGame implements ISubject{
 	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
 
 
-	public boolean rankGreater(Card card1, Card card2) {
+	public static boolean rankGreater(Card card1, Card card2) {
 		return card1.getRankId() < card2.getRankId(); // Warning: Reverse rank order of cards (see comment on enum)
 	}
 	// return random Enum value
@@ -82,11 +82,10 @@ public class Whist extends CardGame implements ISubject{
 
 		// Create nbPlayer hand arrays
 		hands = deck.dealingOut(nbPlayers, 0); // Last element of hands is leftover cards; these are ignore
-		// Own version of dealingOut
+		// Deal cards based on seed
 		ArrayList<Integer> cards = new ArrayList<Integer>();
 		for (int i = 0; i < deck.getNumberOfCards(); i++) { cards.add(i); }
-		Collections.shuffle(cards, random); // Shuffle based on seed
-		// Deal cards to each player
+		Collections.shuffle(cards, random); 
 		for (int i = 0; i < nbPlayers; i++) {
 			for (int j = 0; j < nbStartCards; j++) {
 				int cardNumber = cards.remove(0);
@@ -100,7 +99,7 @@ public class Whist extends CardGame implements ISubject{
 		}
 
 		// TODO: should graphics be separated from Whist class
-		 // graphics
+		// graphics
 	    RowLayout[] layouts = new RowLayout[nbPlayers];
 	    for (int i = 0; i < nbPlayers; i++) {
 			layouts[i] = new RowLayout(handLocations[i], handWidth);
@@ -167,7 +166,7 @@ public class Whist extends CardGame implements ISubject{
 							System.exit(0);
 						}
 				}
-					// End Check
+				// End Check
 				selected.transfer(trick, true); // transfer to trick (includes graphic effect)
 				System.out.println("winning: suit = " + winningCard.getSuit() + ", rank = " + winningCard.getRankId());
 				System.out.println(" played: suit = " +    selected.getSuit() + ", rank = " +    selected.getRankId());
@@ -223,7 +222,7 @@ public class Whist extends CardGame implements ISubject{
 
 		// Read properties
 		Properties whistProperties = new Properties();
-		try (FileReader inStream = new FileReader("legal.properties")) {
+		try (FileReader inStream = new FileReader("smart.properties")) {
 			whistProperties.load(inStream);
 		}
 		String seedProp = whistProperties.getProperty("Seed");
@@ -246,7 +245,7 @@ public class Whist extends CardGame implements ISubject{
 			seedMap.put(true, Integer.parseInt(seedProp));
 		}
 //		Integer seed = seedMap.get(true);
-//        System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
+//		System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
 		new Whist(seedMap);
 	}
 
@@ -264,7 +263,7 @@ public class Whist extends CardGame implements ISubject{
 	public void notifyObservers() {
 		for (Iterator<Player> it = players.iterator(); it.hasNext();) {
 			IObserver o = it.next();
-			o.update(trick,lead, trumps, winningCard);
+			o.update(trick, lead, trumps, winningCard);
 		}
 	}
 }
