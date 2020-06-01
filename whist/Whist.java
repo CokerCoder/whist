@@ -47,7 +47,10 @@ public class Whist extends CardGame implements ISubject{
 	private int[] scores = new int[nbPlayers];
 	private Hand[] hands;
 	private final Deck deck = new Deck(Suit.values(), Rank.values(), "cover");
-
+	private Suit trumps;
+	private Card winningCard;
+	private Hand trick;
+	private Suit lead;
 
 	public static boolean rankGreater(Card card1, Card card2) {
 		return card1.getRankId() < card2.getRankId(); // Warning: Reverse rank order of cards (see comment on enum)
@@ -72,14 +75,11 @@ public class Whist extends CardGame implements ISubject{
 		addActor(scoreActors[player], scoreLocations[player]);
 	}
 
-
 	private void initRound() throws ClassNotFoundException, InstantiationException, InterruptedException, IllegalAccessException {
 		// Create players
 		for (int i=0;i<nbPlayers;i++) {
 			addObserver(new Player(playerType[i]));
-
 		}
-
 		// Create nbPlayer hand arrays
 		hands = deck.dealingOut(nbPlayers, 0); // Last element of hands is leftover cards; these are ignore
 		// Deal cards based on seed
@@ -91,9 +91,6 @@ public class Whist extends CardGame implements ISubject{
 				int cardNumber = cards.remove(0);
 				hands[i].insert(cardNumber, false);
 			}
-		}
-		
-		for (int i = 0; i < nbPlayers; i++) {
 			hands[i].sort(Hand.SortType.SUITPRIORITY, true);
 			players.get(i).setHand(hands[i]);
 		}
@@ -101,7 +98,7 @@ public class Whist extends CardGame implements ISubject{
 		// TODO: should graphics be separated from Whist class
 		// graphics
 	    RowLayout[] layouts = new RowLayout[nbPlayers];
-	    for (int i = 0; i < nbPlayers; i++) {
+	    for (int i = 0; i < nbPlayers; i++){
 			layouts[i] = new RowLayout(handLocations[i], handWidth);
 			layouts[i].setRotationAngle(90 * i);
 //			layouts[i].setStepDelay(10);
@@ -114,11 +111,6 @@ public class Whist extends CardGame implements ISubject{
 //	      	hands[i].setVerso(true);
 	    // End graphics
  	}
-
-	private Suit trumps;
-	private Card winningCard;
-	private Hand trick;
-	private Suit lead;
 
 	private Optional<Integer> playRound() throws InterruptedException {  // Returns winner, if any
 		// Select and display trump suit
@@ -207,7 +199,6 @@ public class Whist extends CardGame implements ISubject{
         else{
         	Whist.random = new Random();	
         }
-		
 		do {
 		  initRound();
 		  winner = playRound();
