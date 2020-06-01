@@ -18,5 +18,4 @@ public class RandomStrategy implements IPlayingStrategy{
         int x = Whist.random.nextInt(list.size());
         return list.get(x);
     }
-
 }

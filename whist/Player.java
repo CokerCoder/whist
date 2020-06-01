@@ -2,15 +2,13 @@ import ch.aplu.jcardgame.*;
 
 public class Player implements IObserver{
     private IPlayingStrategy playingStrategy;
+    private Hand cardsPlayed = new Hand(null);
     private Hand hand;
     private Hand trick;
-
-
-
     private Suit lead;
     private Suit trumps;
     private Card winningCard;
-
+    
     public Player(String type) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
         StrategyFactory factory = StrategyFactory.getInstance();
         switch (type) {
@@ -35,13 +33,12 @@ public class Player implements IObserver{
         return this.playingStrategy.play(this);
     }
 
-    public Hand getHand(){
-        return hand;
-    }
+    public Hand getCardsPlayed() { return cardsPlayed; }
+    public Hand getHand(){ return hand; }
     public void setHand(Hand hand) { this.hand = hand; }
-    public Suit getTrumps(){return trumps;}
-    public Suit getLead() { return lead; }
     public Hand getTrick() { return trick; }
+    public Suit getLead() { return lead; }
+    public Suit getTrumps(){return trumps;}
     public Card getWinningCard() { return winningCard; }
     
     @Override
@@ -50,5 +47,8 @@ public class Player implements IObserver{
         this.lead = lead;
         this.trumps = trumps;
         this.winningCard = winningCard;
+        if (trick.getNumberOfCards() == 4) { // Complete trick always 4 cards
+        	cardsPlayed.insert(trick, false);
+        }
     }
 }

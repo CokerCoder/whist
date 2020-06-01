@@ -180,6 +180,7 @@ public class Whist extends CardGame implements ISubject{
 			setStatusText("Player " + nextPlayer + " wins trick.");
 			scores[nextPlayer]++;
 			updateScore(nextPlayer);
+			notifyObservers(); // Update cards played in each round
 			if (winningScore == scores[nextPlayer]) return Optional.of(nextPlayer);
 		}
 		removeActor(trumpsActor);

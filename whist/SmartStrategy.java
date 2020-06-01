@@ -3,7 +3,6 @@ import java.util.ArrayList;
 import ch.aplu.jcardgame.*;
 
 public class SmartStrategy implements IPlayingStrategy{
-
     @Override
     public Card play(Player player) {
         Suit trumps = player.getTrumps();
@@ -17,6 +16,7 @@ public class SmartStrategy implements IPlayingStrategy{
         ArrayList<Card> leadCards = hand.getCardsWithSuit(lead);
         ArrayList<Card> trumpCards = hand.getCardsWithSuit(trumps);
         ArrayList<Card> trickCards = trick.getCardsWithSuit(lead);
+        ArrayList<Card> nonTrumpCards = getNonTrumpCards(hand, trumps);
         
         // First to lead
         if (lead==null) { 
@@ -24,7 +24,7 @@ public class SmartStrategy implements IPlayingStrategy{
         	if (trumpSize > 0 && trumpCards.get(0).getRankId() == 0) {
         		return hand.getCardsWithSuit(trumps).get(0);
             }
-        	return hand.getFirst(); // TODO: maybe other possible ways?
+        	return hand.getFirst();
         }
         // Follow lead
         else if (leadSize > 0) {
@@ -51,10 +51,31 @@ public class SmartStrategy implements IPlayingStrategy{
         		return hand.getCardsWithSuit(trumps).get(0);
         	}
         }
-        // Play any card
-        // TODO: maybe get it to play the lowest non-trump card
-//        hand.sort(Hand.SortType.RANKPRIORITY, false); 
-        // An idea was to sort hand by rank but this changes graphics
-        return hand.getFirst();
+        // Play the lowest non-trump card
+        Card lowestCard = getLowest(nonTrumpCards);
+        return hand.getCard((Suit)lowestCard.getSuit(), (Rank)lowestCard.getRank());
+    }
+    
+    public ArrayList<Card> getNonTrumpCards(Hand hand, Suit trumps) {
+    	ArrayList<Card> nonTrumpCards = new ArrayList<>();
+    	ArrayList<Card> cards = hand.getCardList();
+    	for (int i = 0; i < cards.size(); i++) {
+    		if (!cards.get(i).getSuit().equals(trumps)) {
+    			nonTrumpCards.add(cards.get(i));
+    		}
+    	}
+    	return nonTrumpCards;
+    }
+    
+    public Card getLowest(ArrayList<Card> cards) {
+    	int lowest = cards.get(0).getRankId();
+    	int index = 0;
+    	for (int i = 0; i < cards.size(); i++) {
+    		if (cards.get(i).getRankId() > lowest) {
+    			lowest = cards.get(i).getRankId();
+    			index = i;
+    		}
+    	}
+    	return cards.get(index);
     }
 }
