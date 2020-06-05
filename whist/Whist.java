@@ -11,7 +11,6 @@ import java.util.Properties;
 
 public class Whist extends CardGame implements ISubject{
 	static Random random;
-
 	// Display attributes
 	final String[] trumpImage = {"bigspade.gif","bigheart.gif","bigdiamond.gif","bigclub.gif"};
 	private static int handWidth = 400;
@@ -95,8 +94,6 @@ public class Whist extends CardGame implements ISubject{
 			players.get(i).setHand(hands[i]);
 		}
 
-		// TODO: should graphics be separated from Whist class
-		// graphics
 	    RowLayout[] layouts = new RowLayout[nbPlayers];
 	    for (int i = 0; i < nbPlayers; i++){
 			layouts[i] = new RowLayout(handLocations[i], handWidth);
@@ -214,7 +211,7 @@ public class Whist extends CardGame implements ISubject{
 
 		// Read properties
 		Properties whistProperties = new Properties();
-		try (FileReader inStream = new FileReader("smart.properties")) {
+		try (FileReader inStream = new FileReader("whist.properties")) {
 			whistProperties.load(inStream);
 		}
 		String seedProp = whistProperties.getProperty("Seed");
@@ -236,8 +233,7 @@ public class Whist extends CardGame implements ISubject{
 		else {
 			seedMap.put(true, Integer.parseInt(seedProp));
 		}
-//		Integer seed = seedMap.get(true);
-//		System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
+
 		new Whist(seedMap);
 	}
 
